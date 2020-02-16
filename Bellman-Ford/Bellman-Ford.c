@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #define INFINITY 999999999
+#define MAX_SIZE 10000
 
 /* Formato de entrada: 1 linha com o número de vértices N e o número de arestas M seguidos de M linhas com 
  * o vértice de ínicio V1, vértice incidente V2 e o peso W:
@@ -12,28 +13,37 @@
  *
  */
 
-void print_graph(int v_number, int graph[v_number][v_number])
-{
-	int i, j;
-	for(i=0; i<v_number; i++){
-      for(j=0; j<v_number; j++){
-        if(graph[i][j] > INFINITY - 10000){ 
-        	printf("+   ");
-        }else{
-        	printf("%d   ", graph[i][j]);
-        }	
-      }
-      printf("\n");
-	}
-	printf("\nObs.: + significa que o peso da aresta eh infinito\n");
+typedef struct edge edge;
+typedef struct graph graph;
+
+struct edge{
+	int source;
+	int destination;
+	int weight;
+};
+
+struct graph{
+	int v_number,e_number;
+	edge *edge;
+};
+
+graph* create_graph(int v_number,int e_number){
+
+	graph* gr = (graph*)  malloc(sizeof(graph));
+	gr->v_number = v_number;
+	gr->e_number = e_number;
+	gr->edge = (edge*) malloc(gr->e_number*sizeof(edge));
+	return gr;
 }
 
-void BellmanFord(int v_number, int graph[v_number][v_number], int start){
-	int i,j,k;
-	int dist[v_number];
-	int prev[v_number];
 
-	for(i=0;i<v_number;i++){
+void BellmanFord(graph *graph, int start){
+	int i,j;
+	int u,v,w;
+	int dist[graph->v_number];
+	int prev[graph->v_number];
+
+	for(i=0;i<graph->v_number;i++){
 		dist[i]=INFINITY;
 		prev[i]=-1;
 	}
@@ -41,23 +51,25 @@ void BellmanFord(int v_number, int graph[v_number][v_number], int start){
 	dist[start]=0;
 	prev[start]=start;
 
-	for(i=0;i<v_number-1;i++){
-		for(j=0; j<v_number;j++){
-			for(k=1;k<v_number;k++){
-				if(graph[j][k]!=INFINITY && dist[k]>dist[j]+graph[j][k]){
-					dist[k]=dist[j]+graph[j][k];
-					prev[k]=j;
-				}	
-			}
+	for(i=0;i<graph->v_number;i++){
+		for(j=0;j<graph->e_number;j++){
+			u = graph->edge[j].source;
+            v = graph->edge[j].destination;
+            w = graph->edge[j].weight;
+            if (dist[v] > dist[u] + w){
+            	dist[v] = dist[u] + w;
+            	prev[v] = u;   
+            }
 		}
 	}
+
 	printf("Array de Distancias em relacao ao Vertice Inicial (0)\n\n");
-	for(i=0;i<v_number;i++){
+	for(i=0;i<graph->v_number;i++){
 		printf("%d ",dist[i]);
 	}
 	printf("\n\n\n");
 	printf("Array de Predecessores\n\n");
-	for(i=0;i<v_number;i++){
+	for(i=0;i<graph->v_number;i++){
 		printf("%d ",prev[i]);
 	}
 	printf("\n");
@@ -80,29 +92,16 @@ int main(){
 
 	fscanf(file,"%d %d", &v_number, &e_number);
 
-	int graph[v_number][v_number];
-	int weight[v_number][v_number];
-
-	//Inicializando com 0
-	for(i=0;i<v_number;i++){
-		for(j=0;j<v_number;j++){
-			if(i != j){
-				graph[i][j]=INFINITY;
-			}else{
-				graph[i][j]=0;
-			}
-		}
-	}
+	graph *graph = create_graph(v_number,e_number);
 
 	//Lendo as arestas
 	for(i = 0;i<e_number;i++){
 		fscanf(file,"%d %d %d", &v1,&v2,&w);
-		graph[v1][v2]=w;
+		graph->edge[i].source = v1;
+		graph->edge[i].destination = v2;
+		graph->edge[i].weight = w;
 	}
 
-	//printf("Matriz de Adjacencias: \n\n");
-	//print_graph(v_number,graph);
-
-	BellmanFord(v_number,graph,0);
+	BellmanFord(graph,0);
 	return 0;
 }
