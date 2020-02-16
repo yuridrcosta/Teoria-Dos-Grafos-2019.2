@@ -103,8 +103,6 @@ int main(){
 	//printf("Matriz de Adjacencias: \n\n");
 	//print_graph(v_number,graph);
 
-	//Após o Floyd-Warshall, a matriz de adjacências do grafo será usada como matriz
-	// de distâncias entre dois vértices
 	BellmanFord(v_number,graph,0);
 	return 0;
 }
